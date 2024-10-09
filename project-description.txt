@@ -1,0 +1,26 @@
+1. Yêu cầu: Hệ thống quản lý khách hàng
+2. Module
+User Management: CRUD
++ User information
++ User type: Admin | Sale Personal | Sale Company
+Customer Management(CRUD)
++ Customer Information
++ Addresses book
++ Customer type: personal | company 
+Role permission
++ Admin system: All customers
++ Sale personal: Only show customers type = personal
++ Sale company: Only show customers type = company
+
+signin signup //
+CRUD user management - require exception //
+CRUD customer management - require exception & role define //
+
+Remained tasks:
+check service functions
+add exception filter //
+add swagger API document
+
+add address schema
+modify the customer schema after add address one
+restrict update right of user, only update for their account

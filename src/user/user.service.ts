@@ -11,11 +11,6 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) { }
 
-  /**
-   * 
-   * @param createUserDto 
-   * @returns promise of user
-   */
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user: User = new User();
     user.email = createUserDto.email;
@@ -29,14 +24,9 @@ export class UserService {
     return this.userRepository.find();
   }
 
-  // Only available for the search of current account
   async findOne(id: number): Promise<User | undefined> {
     const user: User = await this.userRepository.findOne({ where: { id: id } });
-
-    if (user) {
-      return user;
-    }
-
+    if (user) return user;
     return undefined;
   }
 

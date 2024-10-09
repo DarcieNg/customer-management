@@ -11,11 +11,6 @@ export class CustomerService {
     @InjectRepository(Customer) private readonly customerRepository: Repository<Customer>
   ) { };
 
-  /**
-   * 
-   * @param createCustomerDto 
-   * @returns 
-   */
   async create(createCustomerDto: CreateCustomerDto) {
     const customer = new Customer();
     customer.name = createCustomerDto.name;
@@ -30,17 +25,12 @@ export class CustomerService {
 
   async findOne(id: number): Promise<Customer | undefined> {
     const customer: Customer = await this.customerRepository.findOne({ where: { id: id } });
-
-    if (customer) {
-      return customer;
-    }
-
+    if (customer) return customer;
     return undefined;
   }
 
   async update(id: number, updateCustomerDto: UpdateCustomerDto) {
     const customer = await this.findOne(id);
-
     if (customer) {
       await this.customerRepository.update(id, updateCustomerDto);
     }

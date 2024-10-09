@@ -7,7 +7,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { Roles } from 'src/auth/roles/roles.decorator';
 import { Role } from 'src/enum/roles.enum';
 import { Request, Response } from 'express';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 
 @ApiTags('User')
@@ -83,6 +83,7 @@ export class UserController {
   @Get()
   @Roles([Role.ADMIN])
   @UseGuards(JwtAuthGuard, RoleGuard)
+  @ApiOperation({summary: "Get all users - Apply only with user's role admin"})
   @ApiBearerAuth()
   @ApiOkResponse({
     description: "Read users successfully",
@@ -119,8 +120,9 @@ export class UserController {
   }
 
   @Get(':id')
-  @Roles([Role.ADMIN])
+  @Roles([Role.ADMIN, Role.SALE_COMPANY, Role.SALE_PERSONAL])
   @UseGuards(JwtAuthGuard, RoleGuard)
+  @ApiOperation({ summary: "Get user by id - Apply only with user's role admin and get information of current user" })
   @ApiBearerAuth()
   @ApiOkResponse({
     description: `Get user by id successfully`,
@@ -132,13 +134,21 @@ export class UserController {
   @ApiForbiddenResponse({
     description: `Error getting user by id`
   })
-  async findOne(@Res() res: Response, @Param('id', ParseIntPipe) id: number) {
+  async findOne(@Req() req: Request, @Res() res: Response, @Param('id', ParseIntPipe) id: number) {
     try {
+      const currentUser = req.user;
+
       const user = await this.userService.findOne(+id);
 
       if (!user) {
         return res.status(HttpStatus.NOT_FOUND).json({
           message: `User ${id} not found`,
+        });
+      }
+
+      if (currentUser["id"] !== user.id && currentUser["role"] !== "admin") {
+        return res.status(HttpStatus.UNAUTHORIZED).json({
+          message: `Current user cannot get information of another account with id ${id}`,
         });
       }
 
@@ -159,6 +169,7 @@ export class UserController {
   @Patch(':id')
   @Roles([Role.ADMIN, Role.SALE_COMPANY, Role.SALE_PERSONAL])
   @UseGuards(JwtAuthGuard, RoleGuard)
+  @ApiOperation({ summary: "Update user by id - Apply only for update current user's account" })
   @ApiBearerAuth()
   @ApiBody({
     type: CreateUserDto,
@@ -229,6 +240,7 @@ export class UserController {
   @Delete(':id')
   @Roles([Role.ADMIN])
   @UseGuards(JwtAuthGuard, RoleGuard)
+  @ApiOperation({summary: 'Delete user - Only apply for user delete their own account'})
   @ApiBearerAuth()
   @ApiOkResponse({
     description: `Delete user by id successfully`,
@@ -240,13 +252,21 @@ export class UserController {
   @ApiForbiddenResponse({
     description: `Error deleting user by id`
   })
-  async remove(@Res() res: Response, @Param('id', ParseIntPipe) id: number) {
+  async remove(@Req() req: Request, @Res() res: Response, @Param('id', ParseIntPipe) id: number) {
     try {
-      const user = await this.findOne(res, +id);
+      const currentUserId = req.user["id"];
+
+      const user = await this.userService.findOne(+id);
 
       if (!user) {
         return res.status(HttpStatus.NOT_FOUND).json({
           message: `User ${id} not found`,
+        });
+      }
+
+      if (currentUserId !== id) {
+        return res.status(HttpStatus.UNAUTHORIZED).json({
+          message: `Current user cannot delete another account with id ${id}`,
         });
       }
 

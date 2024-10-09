@@ -85,9 +85,9 @@ export class CustomerController {
   @ApiOperation({ summary: 'Get all customers by customer\'s type' })
   @ApiBearerAuth()
   @ApiQuery(
-    { 
-      name: 'type', 
-      type: 'string' 
+    {
+      name: 'type',
+      type: 'string'
     }
   )
   @ApiOkResponse({
@@ -141,7 +141,7 @@ export class CustomerController {
   @Get()
   @Roles([Role.ADMIN, Role.SALE_COMPANY, Role.SALE_PERSONAL])
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @ApiOperation({ summary: 'Get all customers based on user\'s role' })
+  @ApiOperation({ summary: 'Get all customers based on user\'s role - e.g., role=\"sale personal\", only get customer type=personal' })
   @ApiBearerAuth()
   @ApiOkResponse({
     description: "Read customers successfully",
@@ -193,6 +193,7 @@ export class CustomerController {
   @Get(':id')
   @Roles([Role.ADMIN, Role.SALE_COMPANY, Role.SALE_PERSONAL])
   @UseGuards(JwtAuthGuard, RoleGuard)
+  @ApiOperation({ summary: 'Get customer by id based on role' })
   @ApiBearerAuth()
   @ApiOkResponse({
     description: "Read customer by id successfully",
@@ -239,6 +240,7 @@ export class CustomerController {
   @Patch(':id')
   @Roles([Role.ADMIN, Role.SALE_COMPANY, Role.SALE_PERSONAL])
   @UseGuards(JwtAuthGuard, RoleGuard)
+  @ApiOperation({ summary: 'Update customer based on role' })
   @ApiBody({
     type: CreateUserDto,
     examples: {
@@ -267,7 +269,7 @@ export class CustomerController {
   @ApiForbiddenResponse({
     description: "Error getting customer by id"
   })
-  async update(@Req() req: Request, @Res() res: Response , @Param('id', ParseIntPipe) id: number, @Body() updateCustomerDto: UpdateCustomerDto) {
+  async update(@Req() req: Request, @Res() res: Response, @Param('id', ParseIntPipe) id: number, @Body() updateCustomerDto: UpdateCustomerDto) {
     try {
       const customer = await this.findOne(req, res, +id);
 
@@ -302,6 +304,7 @@ export class CustomerController {
   @Delete(':id')
   @Roles([Role.ADMIN, Role.SALE_COMPANY, Role.SALE_PERSONAL])
   @UseGuards(JwtAuthGuard, RoleGuard)
+  @ApiOperation({ summary: 'Delete customer based on role' })
   @ApiBearerAuth()
   @ApiOkResponse({
     description: "Delete customer id successfully",
